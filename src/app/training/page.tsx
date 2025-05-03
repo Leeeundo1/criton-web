@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTrainingStore } from '@/lib/store/trainingStore'; // Assuming '@' alias
+import { useTrainingStore, TrainingState } from '@lib/store/trainingStore';
 
 const questions = [
   "당신의 아이디어는 어떤 문제를 해결하나요?",
@@ -15,33 +15,29 @@ const questions = [
 export default function TrainingPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
-  const { answers, setAnswer } = useTrainingStore((state) => ({ answers: state.answers, setAnswer: state.setAnswer }));
+
+  const answers = useTrainingStore((state: TrainingState) => state.answers);
+  const setAnswer = useTrainingStore((state: TrainingState) => state.setAnswer);
+
   const router = useRouter();
 
-  // Load existing answer if user navigates back
   useEffect(() => {
     const existingAnswer = answers[currentQuestionIndex];
     if (existingAnswer) {
       setCurrentAnswer(existingAnswer);
     }
-    // Clear answer field only if there was no existing answer for the new question
     else {
       setCurrentAnswer('');
     }
-    // Depend on index to re-run when question changes
   }, [currentQuestionIndex, answers]);
 
   const handleNext = () => {
-    // Save current answer before moving
     setAnswer(currentQuestionIndex, currentAnswer);
-
     const isLastQuestion = currentQuestionIndex === questions.length - 1;
-
     if (isLastQuestion) {
       router.push('/summary');
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      // The useEffect will handle clearing or loading the next answer
     }
   };
 
@@ -68,7 +64,7 @@ export default function TrainingPage() {
           onChange={(e) => setCurrentAnswer(e.target.value)}
           placeholder="여기에 답변을 입력하세요..."
           className="w-full p-4 border border-gray-300 rounded-xl shadow-sm min-h-[150px] focus:ring-indigo-500 focus:border-indigo-500"
-          rows={5} // Suggest initial rows
+          rows={5}
         />
 
         {/* Navigation Button */}
